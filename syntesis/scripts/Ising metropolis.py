@@ -40,7 +40,7 @@ grid = -1 + 2*grid
 
 
 # +
-def adjacent_indexes_torus(idx, N):
+def adjacent_indices_torus(idx, N):
     i, j = idx
     return [
         ((i+1)%N, j),
@@ -49,7 +49,7 @@ def adjacent_indexes_torus(idx, N):
         (i, (j-1)%N),
     ]
 
-adjacent_indexes_torus((1, 20), 20)
+adjacent_indices_torus((1, 20), 20)
 
 # +
 beta = 1/10
@@ -61,8 +61,8 @@ E = 0
 e_0 = 30
 for i in range(N):
     for j in range(N):
-        adj_ = adjacent_indexes_torus((i,j), N)
-        E += sum(-J*x*grid[ix] for ix in adj_)
+        adj_ = adjacent_indices_torus((i,j), N)
+        E += sum(-J*grid[i,j]*grid[ix] for ix in adj_)
         E += -mu*grid[i, j]
 
 averages = []
@@ -74,7 +74,7 @@ for n in range(int(2e3)):
     i, j = (np.random.randint(0, N, size=(2,)))
     x = grid[i, j]
     grid[i, j] = - x
-    adj_ = adjacent_indexes_torus((i,j), N)
+    adj_ = adjacent_indices_torus((i,j), N)
     dE = sum(-J*x*grid[ix] for ix in adj_)
     dE += -mu*x
     dE = -2*dE
