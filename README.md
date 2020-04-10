@@ -5,7 +5,7 @@ The framework is to streamline the proocess of development experimentation and r
 Output of `DER` is `packaged code`, `data` which often represented as plots and `figures`
 and `research outcomes` which are usually go in form of article/notes/jupyter notebooks
 
-# R&D stages
+# DER stages
 
 States
 
