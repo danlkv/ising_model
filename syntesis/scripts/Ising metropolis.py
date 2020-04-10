@@ -53,7 +53,7 @@ adjacent_indexes_torus((1, 20), 20)
 
 # +
 beta = 1/10
-J = -10
+J = 10
 mu = 1
 
 # This is not efficient, but is clear to read
@@ -61,14 +61,10 @@ E = 0
 e_0 = 30
 for i in range(N):
     for j in range(N):
-        
-        E += -J*int(grid[i,j] * grid[(i+1)%N, j])
-        E += -J*int(grid[i,j] * grid[i-1, j])
-        E += -J*int(grid[i,j] * grid[i, (j+1)%N])
-        E += -J*int(grid[i,j] * grid[i, j-1])
-        E += mu*grid[i, j]
+        adj_ = adjacent_indexes_torus((i,j), N)
+        E += sum(-J*x*grid[ix] for ix in adj_)
+        E += -mu*grid[i, j]
 
-        
 averages = []
 energies = []
 print('Starting energy', E)
@@ -78,14 +74,10 @@ for n in range(int(2e3)):
     i, j = (np.random.randint(0, N, size=(2,)))
     x = grid[i, j]
     grid[i, j] = - x
-    dE = 0
-    dE += x * grid[(i+1)%20, j]
-    dE += x * grid[i-1, j]
-    dE += x * grid[i, (j+1)%20]
-    dE += x * grid[i, j-1]
-    dE *= J
-    dE += mu*x
-    dE = 2*dE
+    adj_ = adjacent_indexes_torus((i,j), N)
+    dE = sum(-J*x*grid[ix] for ix in adj_)
+    dE += -mu*x
+    dE = -2*dE
     
     accept_p = min(1, np.exp(-beta*dE))
     
@@ -105,5 +97,7 @@ plt.plot(energies, label='Energy', color='orange')
 plt.legend()
 
 plt.imshow(grid)
+
+
 
 
