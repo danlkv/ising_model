@@ -53,7 +53,7 @@ def simulate_ising(grid, beta, J, mu):
     averages = []
     energies = []
     print('Starting energy', E)
-    for n in range(int(2e3)):
+    for n in range(int(1e5)):
         averages.append(np.mean(grid))
         energies.append(E)
         i, j = (np.random.randint(0, N, size=(2,)))
@@ -79,20 +79,30 @@ adjacent_indices_torus((1, 20), 20)
 # Insight from using full energy
 np.seterr(over='raise')
 
-N = 20
+N = 50
 grid = np.random.randint(low=0, high=2, size=(N, N))
 plt.imshow(grid)
 # Rescale to +-1
 grid = -1 + 2*grid
 
 # +
-beta = 1/10
-J = 10
-mu = 1
+J = 0.5
+mu = 0
 
-grid, averages, energies = simulate_ising(grid, beta, J, mu)
-
+temps = np.linspace(3, 3, 1)
+averages_b = []
+for T in temps:
+    beta = 1/T
+    grid = np.random.randint(low=0, high=2, size=(N, N))
+    #grid = np.ones((N,N))
+    grid = -1 + 2*grid
+    _, averages, energies = simulate_ising(grid, beta, J, mu)
+    plt.plot(energies)
+    averages_b.append(averages[-1])
+    
 # -
+
+plt.plot(temps, averages_b)
 
 fig, axs = plt.subplots(2,1, figsize=(5,5))
 plt.plot(averages, label='average occupation') 
@@ -100,6 +110,10 @@ plt.legend()
 plt.sca(axs[0])
 plt.plot(energies, label='Energy', color='orange') 
 plt.legend()
+
+plt.plot(np.convolve(averages, np.ones((N**2,))/n**2))
+plt.show()
+plt.plot(np.convolve(energies, np.ones((N**2,))/n**2))
 
 plt.imshow(grid)
 
