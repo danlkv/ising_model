@@ -10,7 +10,7 @@ and `research outcomes` which are usually go in form of article/notes/jupyter no
 States
 
     1. Syntesis of some code, in form of notebooks, usually in easy-to-tinker scratchpad fashion.
-    2. Gradually abstracting and pacaging pieces of notebooks into .py files using `nbconvert`
+    2. Gradually abstracting and packaging pieces of notebooks into .py files using `jupytext`
     3. Plotting theoretical plots from experimentation.
     4. Packaging the solution src for later use by copying or linking files from syntesis
     5. Generating data by running the simulation/recourse heavy computation job
