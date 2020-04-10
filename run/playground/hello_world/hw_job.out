@@ -1,0 +1,41 @@
+Hello world, I'm job 87583
+Working dir /home/danlkv/anl/qtree/run
+Hello world, I'm job 87584
+Working dir /home/danlkv/anl/qtree/run
+python -c import sys; print('Hello from python', sys.version)
+('Hello from python', '2.7.5 (default, May 31 2018, 09:41:32) \n[GCC 4.8.5 20150623 (Red Hat 4.8.5-28)]')
+Home: /home/danlkv, path: /home/danlkv/.local/bin:/home/danlkv/bin:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/bin/intel64:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/mpi/intel64/bin:/usr/local/bin:/usr/bin
+Hello from python 3.7.6 (v3.7.6:43364a7, Mar  4 2020, 00:50:55) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-36)]
+Home: /home/danlkv
+workdir: 
+path: /home/danlkv/.local/bin:/home/danlkv/bin:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/bin/intel64:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/mpi/intel64/bin:/usr/local/bin:/usr/bin
+pythonpath: /home/danlkv/git-build/cpython/Lib:
+Hello from python 3.7.6 (v3.7.6:43364a7, Mar  4 2020, 00:50:55) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-36)]
+Home: /home/danlkv
+workdir: /home/danlkv/anl/qtree
+path: /home/danlkv/.local/bin:/home/danlkv/bin:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/bin/intel64:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/mpi/intel64/bin:/usr/local/bin:/usr/bin
+pythonpath: /home/danlkv/git-build/cpython/Lib:
+Hello from python 3.7.6 (v3.7.6:43364a7, Mar  4 2020, 00:50:55) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-36)]
+
+Job 87590
+env:
+  home: /home/danlkv
+  workdir: /home/danlkv/anl/qtree
+  path: /home/danlkv/.local/bin:/home/danlkv/bin:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/bin/intel64:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/mpi/intel64/bin:/usr/local/bin:/usr/bin
+  pythonpath: /home/danlkv/git-build/cpython/Lib:
+
+Hello from python 3.7.6 (v3.7.6:43364a7, Mar  4 2020, 00:50:55) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-36)]
+
+Job 87591
+env:
+  home: /home/danlkv
+  workdir: /home/danlkv/anl/qtree
+  path: /home/danlkv/.local/bin:/home/danlkv/bin:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/bin/intel64:/soft/compilers/intel/compilers_and_libraries_2018.0.128/linux/mpi/intel64/bin:/usr/local/bin:/usr/bin
+  pythonpath: /home/danlkv/git-build/cpython/Lib:
+
+Hello from python 3.7.6 (v3.7.6:43364a7, Mar  4 2020, 00:50:55) 
+[GCC 4.8.5 20150623 (Red Hat 4.8.5-36)]
