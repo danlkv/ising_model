@@ -56,37 +56,41 @@ beta = 1/10
 J = 10
 mu = 1
 
-# This is not efficient, but is clear to read
-E = 0
-e_0 = 30
-for i in range(N):
-    for j in range(N):
-        adj_ = adjacent_indices_torus((i,j), N)
-        E += sum(-J*grid[i,j]*grid[ix] for ix in adj_)
-        E += -mu*grid[i, j]
+def simulate_ising(grid, beta, J, mu):
+    # This is not efficient, but is clear to read
+    E = 0
+    e_0 = 30
+    for i in range(N):
+        for j in range(N):
+            adj_ = adjacent_indices_torus((i,j), N)
+            E += sum(-J*grid[i,j]*grid[ix] for ix in adj_)
+            E += -mu*grid[i, j]
 
-averages = []
-energies = []
-print('Starting energy', E)
-for n in range(int(2e3)):
-    averages.append(np.mean(grid))
-    energies.append(E)
-    i, j = (np.random.randint(0, N, size=(2,)))
-    x = grid[i, j]
-    grid[i, j] = - x
-    adj_ = adjacent_indices_torus((i,j), N)
-    dE = sum(-J*x*grid[ix] for ix in adj_)
-    dE += -mu*x
-    dE = -2*dE
-    
-    accept_p = min(1, np.exp(-beta*dE))
-    
-    if accept_p>np.random.rand():
-        E = E + dE
-    else:
-        #reset it back
-        grid[i, j] = x
-    
+    averages = []
+    energies = []
+    print('Starting energy', E)
+    for n in range(int(2e3)):
+        averages.append(np.mean(grid))
+        energies.append(E)
+        i, j = (np.random.randint(0, N, size=(2,)))
+        x = grid[i, j]
+        grid[i, j] = - x
+        adj_ = adjacent_indices_torus((i,j), N)
+        dE = sum(-J*x*grid[ix] for ix in adj_)
+        dE += -mu*x
+        dE = -2*dE
+
+        accept_p = min(1, np.exp(-beta*dE))
+
+        if accept_p>np.random.rand():
+            E = E + dE
+        else:
+            #reset it back
+            grid[i, j] = x
+    return grid, averages, energies
+
+grid, averages, energies = simulate_ising(grid, beta, J, mu)
+
 # -
 
 fig, axs = plt.subplots(2,1, figsize=(5,5))
