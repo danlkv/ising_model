@@ -21,6 +21,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # ## Simple first run
 #
 # 1. Iniatilize NxN grid
@@ -28,16 +29,6 @@ import matplotlib.pyplot as plt
 # 3. Flip random spin and compute $\Delta E$
 # 4. Accept or reject based on criteria
 # 5. Continue to 3
-
-# Insight from using full energy
-np.seterr(over='raise')
-
-N = 20
-grid = np.random.randint(low=0, high=2, size=(N, N))
-plt.imshow(grid)
-# Rescale to +-1
-grid = -1 + 2*grid
-
 
 # +
 def adjacent_indices_torus(idx, N):
@@ -48,13 +39,6 @@ def adjacent_indices_torus(idx, N):
         (i, (j+1)%N),
         (i, (j-1)%N),
     ]
-
-adjacent_indices_torus((1, 20), 20)
-
-# +
-beta = 1/10
-J = 10
-mu = 1
 
 def simulate_ising(grid, beta, J, mu):
     # This is not efficient, but is clear to read
@@ -88,6 +72,23 @@ def simulate_ising(grid, beta, J, mu):
             #reset it back
             grid[i, j] = x
     return grid, averages, energies
+
+adjacent_indices_torus((1, 20), 20)
+# -
+
+# Insight from using full energy
+np.seterr(over='raise')
+
+N = 20
+grid = np.random.randint(low=0, high=2, size=(N, N))
+plt.imshow(grid)
+# Rescale to +-1
+grid = -1 + 2*grid
+
+# +
+beta = 1/10
+J = 10
+mu = 1
 
 grid, averages, energies = simulate_ising(grid, beta, J, mu)
 
