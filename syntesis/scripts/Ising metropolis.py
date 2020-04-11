@@ -78,6 +78,11 @@ def simulate_ising(grid, beta, J, mu, steps=int(1e5), E=None):
     energies.append(E)
     return grid, energies
 
+def get_random_grid(N):
+    grid = np.random.randint(low=0, high=2, size=(N, N))
+    grid = -1 + 2*grid
+    return grid
+
 adjacent_indices_torus((1, 20), 20)
 # -
 
@@ -85,10 +90,9 @@ adjacent_indices_torus((1, 20), 20)
 np.seterr(over='raise')
 
 N = 50
-grid = np.random.randint(low=0, high=2, size=(N, N))
+grid = get_random_grid(N)
 plt.imshow(grid)
 # Rescale to +-1
-grid = -1 + 2*grid
 
 # +
 J = 0.5
@@ -99,9 +103,7 @@ eneg_tm = []
 mag_tm = []
 for T in temps:
     beta = 1/T
-    grid = np.random.randint(low=0, high=2, size=(N, N))
-    #grid = np.ones((N,N))
-    grid = -1 + 2*grid
+    grid = get_random_grid(N)
     grid, energies = simulate_ising(grid, beta, J, mu, steps=N**2*500)
     
     E = []
@@ -115,7 +117,7 @@ for T in temps:
     print('done measure')
     eneg_tm.append(E)
     mag_tm.append(M)
-    
+
 
 # +
 fig, axs = plt.subplots(2,2, figsize=(6,6))
