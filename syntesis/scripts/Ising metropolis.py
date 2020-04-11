@@ -40,22 +40,25 @@ def adjacent_indices_torus(idx, N):
         (i, (j-1)),
     ]
 
-#@profile
-def simulate_ising(grid, beta, J, mu, steps=int(1e5)):
-    # This is not efficient, but is clear to read
+def ising_energy(grid, J, mu):
+    N = len(grid)
     E = 0
+    # This is not efficient, but is clear to read
     for i in range(N):
         for j in range(N):
             adj_ = adjacent_indices_torus((i,j), N)
-            E += sum(-J*grid[i,j]*grid[ix] for ix in adj_)
+            E += -J*grid[i,j]*sum(grid[ix] for ix in adj_)
             E += -mu*grid[i, j]
+    return E
 
-    averages = []
+#@profile
+def simulate_ising(grid, beta, J, mu, steps=int(1e5), E=None):
+    if E is None:
+        E = ising_energy(grid, J, mu)
+
     energies = []
-    print('Starting energy', E)
     randix = (np.random.randint(0, N, size=(steps,2)))
     for n in range(steps):
-        #averages.append(np.mean(grid))
         energies.append(E)
         i,j = randix[n]
         x = grid[i,j]
@@ -72,7 +75,8 @@ def simulate_ising(grid, beta, J, mu, steps=int(1e5)):
         if accept_p>np.random.rand():
             grid[i, j] = - x
             E = E + dE
-    return grid, averages, energies
+    energies.append(E)
+    return grid, energies
 
 adjacent_indices_torus((1, 20), 20)
 # -
@@ -90,20 +94,41 @@ grid = -1 + 2*grid
 J = 0.5
 mu = 0
 
-temps = np.linspace(0, 3, 10)
-averages_b = []
+temps = np.linspace(0.5, 3, 20)
+eneg_tm = []
+mag_tm = []
 for T in temps:
     beta = 1/T
     grid = np.random.randint(low=0, high=2, size=(N, N))
     #grid = np.ones((N,N))
     grid = -1 + 2*grid
-    grid, averages, energies = simulate_ising(grid, beta, J, mu, steps=N**2*100)
-    plt.plot(energies)
-    averages_b.append(np.mean(grid))
+    grid, energies = simulate_ising(grid, beta, J, mu, steps=N**2*500)
     
-# -
+    E = []
+    M = []
+    print('measure')
+    for i in range(N**2*100):
+        grid, energies = simulate_ising(grid, beta, J, mu, steps=1, E=energies[-1])
+        E.append( energies[-1] )
+        M.append(np.mean(grid))
+        
+    print('done measure')
+    eneg_tm.append(E)
+    mag_tm.append(M)
+    
 
-plt.plot(temps, averages_b)
+# +
+fig, axs = plt.subplots(2,2, figsize=(6,6))
+
+[ax.set_title(t) for ax, t in zip(sum(map(list, axs),[]),
+                              ['Energy','Specific Heat', 'Magnetization', 'Susceptibility'])]
+
+axs[0,0].plot(temps, list(map(np.mean, eneg_tm)))
+axs[0,1].plot(temps, list(map(np.std, eneg_tm)))
+axs[1,0].plot(temps, list(map(np.mean, mag_tm)))
+axs[1,1].plot(temps, list(map(np.std, mag_tm)))
+
+# -
 
 fig, axs = plt.subplots(2,1, figsize=(5,5))
 plt.plot(averages, label='average occupation') 
