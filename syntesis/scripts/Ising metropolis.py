@@ -21,7 +21,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 # ## Simple first run
 #
 # 1. Iniatilize NxN grid
@@ -31,6 +30,9 @@ import matplotlib.pyplot as plt
 # 5. Continue to 3
 
 # +
+# %%writefile scripts/utils.py
+import numpy as np
+
 def adjacent_indices_torus(idx, N):
     i, j = idx
     return [
@@ -51,6 +53,13 @@ def ising_energy(grid, J, mu):
             E += -mu*grid[i, j]
     return E
 
+def get_random_grid(N):
+    grid = np.random.randint(low=0, high=2, size=(N, N))
+    grid = -1 + 2*grid
+    return grid
+
+
+# +
 #@profile
 def simulate_ising(grid, beta, J, mu, steps=int(1e5), E=None):
     if E is None:
@@ -78,10 +87,6 @@ def simulate_ising(grid, beta, J, mu, steps=int(1e5), E=None):
     energies.append(E)
     return grid, energies
 
-def get_random_grid(N):
-    grid = np.random.randint(low=0, high=2, size=(N, N))
-    grid = -1 + 2*grid
-    return grid
 
 adjacent_indices_torus((1, 20), 20)
 # -
