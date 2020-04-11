@@ -24,3 +24,20 @@ def get_random_grid(N):
     grid = np.random.randint(low=0, high=2, size=(N, N))
     grid = -1 + 2*grid
     return grid
+
+#@profile
+def metrop_step(grid, idx, J, mu, N):
+        i, j = idx
+        x = grid[i,j]
+        adj_ = adjacent_indices_torus((i,j), N)
+        dE = J*x*sum(grid[ix] for ix in adj_) + mu*x
+        dE *= 2
+
+        if dE < 0:
+            grid[i, j] = - x
+            return dE
+
+        accept_p = np.exp(-beta*dE)
+        if accept_p>np.random.rand():
+            grid[i, j] = - x
+            return dE

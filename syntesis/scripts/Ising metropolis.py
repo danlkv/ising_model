@@ -58,6 +58,22 @@ def get_random_grid(N):
     grid = -1 + 2*grid
     return grid
 
+#@profile
+def metrop_step(grid, idx, J, mu, N):
+        i, j = idx
+        x = grid[i,j]
+        adj_ = adjacent_indices_torus((i,j), N)
+        dE = J*x*sum(grid[ix] for ix in adj_) + mu*x
+        dE *= 2
+
+        if dE < 0:
+            grid[i, j] = - x
+            return dE
+
+        accept_p = np.exp(-beta*dE)
+        if accept_p>np.random.rand():
+            grid[i, j] = - x
+            return dE
 
 # +
 #@profile
@@ -69,21 +85,10 @@ def simulate_ising(grid, beta, J, mu, steps=int(1e5), E=None):
     randix = (np.random.randint(0, N, size=(steps,2)))
     for n in range(steps):
         energies.append(E)
-        i,j = randix[n]
-        x = grid[i,j]
-        adj_ = adjacent_indices_torus((i,j), N)
-        dE = J*x*sum(grid[ix] for ix in adj_) + mu*x
-        dE *= 2
+        dE = metrop_step(grid, randix[n], J, mu, N)
+        if dE:
+            E += dE
 
-        if dE < 0:
-            grid[i, j] = - x
-            E = E + dE
-            continue
-
-        accept_p = np.exp(-beta*dE)
-        if accept_p>np.random.rand():
-            grid[i, j] = - x
-            E = E + dE
     energies.append(E)
     return grid, energies
 
@@ -103,13 +108,13 @@ plt.imshow(grid)
 J = 0.5
 mu = 0
 
-temps = np.linspace(0.5, 3, 20)
+temps = np.linspace(0.5, 3, 1)
 eneg_tm = []
 mag_tm = []
 for T in temps:
     beta = 1/T
     grid = get_random_grid(N)
-    grid, energies = simulate_ising(grid, beta, J, mu, steps=N**2*500)
+    grid, energies = simulate_ising(grid, beta, J, mu)#: steps=N**2*500)
     
     E = []
     M = []
