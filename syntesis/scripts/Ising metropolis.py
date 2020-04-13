@@ -59,7 +59,7 @@ def get_random_grid(N):
     return grid
 
 #@profile
-def metrop_step(grid, idx, J, mu, N):
+def metrop_step(grid, idx, J, mu, beta, N):
         i, j = idx
         x = grid[i,j]
         adj_ = adjacent_indices_torus((i,j), N)
@@ -85,7 +85,7 @@ def simulate_ising(grid, beta, J, mu, steps=int(1e5), E=None):
     randix = (np.random.randint(0, N, size=(steps,2)))
     for n in range(steps):
         energies.append(E)
-        dE = metrop_step(grid, randix[n], J, mu, N)
+        dE = metrop_step(grid, randix[n], J, mu, beta, N)
         if dE:
             E += dE
 
