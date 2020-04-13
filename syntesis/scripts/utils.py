@@ -26,7 +26,7 @@ def get_random_grid(N):
     return grid
 
 #@profile
-def metrop_step(grid, idx, J, mu, N):
+def metrop_step(grid, idx, J, mu, beta, N):
         i, j = idx
         x = grid[i,j]
         adj_ = adjacent_indices_torus((i,j), N)
