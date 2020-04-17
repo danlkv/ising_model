@@ -83,6 +83,7 @@ def torch_ising(grid, conv, beta):
     acc_prob = T.exp(-beta*F.relu(dE))
     random = T.rand_like(acc_prob)
     sub[acc_prob > random] *= -1
+    dE[acc_prob < random] *= 0
     grid[ixs] = sub
     return grid, float(dE.sum().detach()), acc_prob
    
@@ -127,7 +128,7 @@ for s in range(9*sweeps):
     rix = np.random.randint(0,3,2)
     grid = T.roll(grid, tuple(rix), dims=(2,3))
     E += dE
-    energs.append(dE)
+    energs.append(E)
     mags.append(float(grid.mean()))
 
 plt.plot(energs)
