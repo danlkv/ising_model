@@ -24,7 +24,7 @@ from itertools import product
 from torch.functional import F
 import matplotlib.pyplot as plt
 
-import scripts.utils as ising
+import scripts.ising as ising
 
 # %load_ext autoreload
 # %autoreload 2
@@ -43,7 +43,13 @@ J = .5
 mu = 0.1
 def get_nn_mask(J, mu):
      return np.array([
-         [-J/2, J, J/2]
+         [0, J, 0]
+        ,[J, mu, J]
+        ,[0, J, 0]
+    ])
+def get_funny_mask(J, mu):
+     return np.array([
+         [J, J, J/2]
         ,[J, mu, J]
         ,[J/2, J, -J/2]
     ])
@@ -75,8 +81,8 @@ def torch_ising(grid, conv, beta):
     
     dE = 2*conv(grid)[0,0]
     
-    ixs = np.arange(1, grid.shape[-1]-3, 3)
-    ixs = (0,0) + np.ix_(ixs, ixs)
+    scatter_ixs = [np.arange(1, d-3, 3) for d in grid.shape[2:]]
+    ixs = (0,0) + np.ix_(*scatter_ixs)
     sub = grid[ixs]
     dE = sub*dE
     
@@ -108,21 +114,21 @@ plt.imshow(acc.detach().numpy())
 
 # ## Simulate with conv
 
-# +
-sweeps = 80
 E = 0
-
-mask = get_nn_mask(.5, 0)
-beta = 1/.5
 grid = grid_torch(ising.get_random_grid(500)) .to(device)
-conv = get_conv_torch(mask)                  .to(device)
 
-E = 0
+# +
+mask = get_nn_mask(.5, 0)
+#mask = get_funny_mask(.5, 0)
+conv = get_conv_torch(mask).to(device)
+
+beta = 1/2.9;
 M = float(grid.mean())
 energs = [E]
 mags = [M]
 # -
 
+sweeps = 80
 for s in range(9*sweeps):
     grid, dE, acc = torch_ising(grid, conv, beta=beta)
     rix = np.random.randint(0,3,2)
