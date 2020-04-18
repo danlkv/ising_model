@@ -20,7 +20,6 @@
 # +
 import torch as T
 import numpy as np
-from itertools import product
 from torch.functional import F
 import matplotlib.pyplot as plt
 
@@ -39,8 +38,14 @@ else:
 
 # ## Syntetic tests of cuda vs numpy vs torch
 
-J = .5
-mu = 0.1
+# +
+# %%writefile scripts/torch_ising.py
+import torch as T
+import numpy as np
+from itertools import product
+from torch.functional import F
+import scripts.ising as ising
+
 def get_nn_mask(J, mu):
      return np.array([
          [0, J, 0]
@@ -53,13 +58,8 @@ def get_funny_mask(J, mu):
         ,[J, mu, J]
         ,[J/2, J, -J/2]
     ])
-nn_mask = get_nn_mask(J, mu)
-plt.imshow(nn_mask)
-
-list(product(range(3),range(3)))
 
 
-# +
 def get_conv_torch(mask):
     """ Get 2d torch convolution with mask """
     in_chan, out_chan = 1, 1
@@ -77,7 +77,19 @@ def grid_torch(grid):
     gpu_grid = T.from_numpy(grid[np.newaxis, np.newaxis,...]).double()
     return gpu_grid
 
-def torch_ising(grid, conv, beta):
+
+def get_conv_nn(J, mu, device='cuda'):
+    nn_mask = get_nn_mask(J, mu)
+    conv = get_conv_torch(nn_mask)
+    return conv.to(device)
+
+def get_random_grid(N, device='cuda'):
+    g_ = grid_torch(ising.get_random_grid(N))
+    return g_.to(device)
+
+def metrop_step(grid, conv, beta):
+    rix = np.random.randint(0, high=3, size=2)
+    grid = T.roll(grid, shifts=tuple(rix), dims=(2,3))
     
     dE = 2*conv(grid)[0,0]
     
@@ -91,7 +103,7 @@ def torch_ising(grid, conv, beta):
     sub[acc_prob > random] *= -1
     dE[acc_prob < random] *= 0
     grid[ixs] = sub
-    return grid, float(dE.sum().detach()), acc_prob
+    return float(dE.sum().detach())
    
 
 
@@ -106,9 +118,8 @@ grid = grid_torch(ising.get_random_grid(50))
 gr = grid.to(device)
 conv = conv.to(device)
 print('before', grid.mean())
-grid, dE, acc = torch_ising(gr, conv, beta=1/2)
+dE = torch_ising(gr, conv, beta=1/2)
 print('after', grid.mean())
-plt.imshow(acc.detach().numpy())
 
 # -
 
@@ -130,9 +141,7 @@ mags = [M]
 
 sweeps = 80
 for s in range(9*sweeps):
-    grid, dE, acc = torch_ising(grid, conv, beta=beta)
-    rix = np.random.randint(0,3,2)
-    grid = T.roll(grid, tuple(rix), dims=(2,3))
+    dE = metrop_step(grid, conv, beta=beta)
     E += dE
     energs.append(E)
     mags.append(float(grid.mean()))
