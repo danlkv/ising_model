@@ -1,7 +1,7 @@
 # Syntesis
 
-This folder is a forgery of novelity. 
-Experimentation and dirty hacks for quick testing is a welcome guest here.
+This folder is a foundry of novelity. 
+Experimentation and dirty hacks for quick testing are welcome guests here.
 Gradual packaging is done in following stages:
     
     0. Go wild with experiments
