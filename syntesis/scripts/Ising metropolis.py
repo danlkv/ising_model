@@ -117,7 +117,7 @@ for T in tqdm(temps):
     for ix in random_ix(N, steps=9*therm_sweeps):
         grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
     
-    measure_sweeps = 700
+    measure_sweeps = 600
     E = [ising.ising_energy(grid[0][0], J, mu).cpu().numpy()]
     M = [grid.sum().cpu().numpy()]
     #grid = grid.cpu().numpy()[0,0]
@@ -137,45 +137,51 @@ for T in tqdm(temps):
 
 
 
-# +
 energies = np.mean(eneg_tm, axis=1)
 susc = np.std(eneg_tm, axis=1)
-
-plt.plot(energies/N**2)
-plt.gca().twinx()
-plt.plot(susc/temps, 'red')
-
-# +
 magnetizations = np.mean(mag_tm, axis=1)
 permit = np.std(mag_tm, axis=1)
 
-plt.plot(magnetizations/N**2)
+
+
+# +
+fig, axs = plt.subplots(1,2, figsize=(10,4))
+
+fig.suptitle(
+    ('Ising with conv2d.\n'
+     f'{N=}, {therm_sweeps=}, {measure_sweeps=}\n '
+    )
+    #, y=1.00
+    , fontsize=13
+)
+
+plt.sca(axs[0])
+plt.errorbar(temps, energies/N**2
+             , yerr=susc/N**2
+             , capsize=2
+            )
 plt.gca().twinx()
-plt.plot(permit/temps, 'red')
+plt.plot(temps, susc/temps, 'red', label='Specific heat')
+plt.legend(loc='upper left')
 
-# +
-fig, axs = plt.subplots(2,2, figsize=(8,6))
+plt.sca(axs[1])
+#plt.plot(temps, magnetizations/N**2)
+plt.errorbar(temps, magnetizations/N**2
+             , yerr=permit/N**2
+             , capsize=2
+            )
+plt.gca().twinx()
+plt.plot(temps, permit/temps/N**2, 'red', label='M. Susceptibility')
 
-[ax.set_title(t) for ax, t in zip(sum(map(list, axs),[]),
-                              ['Energy','Specific Heat', 'Magnetization', 'Susceptibility'])]
+plt.legend(loc='center left')
 
-axs[0,0].plot(temps, energies)
-axs[0,1].plot(temps, list(map(np.std, eneg_tm)))
-axs[1,0].plot(temps, list(map(np.mean, mag_tm)))
-axs[1,1].plot(temps, list(map(np.std, mag_tm)))
+[ax.grid() for ax in axs]
+[ax.set_title(x) for ax,x in zip(axs, ['Energy', 'Magnetization'])]
+[ax.set_xlabel('kT') for ax in axs]
+plt.subplots_adjust(top=0.80)
 
 
-# +
-fig, axs = plt.subplots(2,2, figsize=(8,6))
-
-[ax.set_title(t) for ax, t in zip(sum(map(list, axs),[]),
-                              ['Energy','Specific Heat', 'Magnetization', 'Susceptibility'])]
-
-axs[0,0].plot(temps, list(map(np.mean, eneg_tm)))
-axs[0,1].plot(temps, list(map(np.std, eneg_tm)))
-axs[1,0].plot(temps, list(map(np.mean, mag_tm)))
-axs[1,1].plot(temps, list(map(np.std, mag_tm)))
-
+plt.savefig('../data/figures/Ising_conv2d_600sweeps.png')
 # -
 
 plt.plot(mag_tm[20])
@@ -196,5 +202,3 @@ plt.legend()
 
 #grid = get_random_grid(50)
 plt.imshow(grid[0,0])
-
-plt.plot(grid[0,0,0])
