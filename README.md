@@ -1,6 +1,6 @@
 # Work framework
 
-The framework is to streamline the proocess of development experimentation and research (`DER`)
+The framework is to streamline the proocess of *development experimentation and research* (`DER`)
 
 Output of `DER` is `packaged code`, `data` which often represented as plots and `figures`
 and `research outcomes` which are usually go in form of article/notes/jupyter notebooks
@@ -22,5 +22,6 @@ Transitions
     1 -> 3
     3 -> 1
     4 -> 1, 2
+    2,3 -> 5,6
 
 After packaging, a testing stage may be added
