@@ -19,6 +19,7 @@
 
 # +
 import numpy as np
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 from scripts import ising
 from scripts import torch_ising
@@ -57,7 +58,7 @@ grid = ising.get_random_grid(N)
 J = 0.5
 mu = 0
 
-temps = np.linspace(0.5, 3, 10)
+temps = np.linspace(0.05, 3, 100)
 eneg_tm = []
 mag_tm = []
 for T in temps:
@@ -65,14 +66,15 @@ for T in temps:
     grid = ising.get_random_grid(N)
     
     # Thermalise    
-    therm_sweeps = 20
+    therm_sweeps = 200
     for ix in random_ix(N, steps=N**2*therm_sweeps):
         dE = ising.metrop_step(grid, ix, J, mu, beta, N)
     
     E = [ising.ising_energy(grid, J, mu)]
     M = [np.mean(grid)]
     print('measure t=',T)
-    for ix in random_ix(N, steps=N**2*10):
+    for ix in random_ix(N, steps=N**2*100):
+        raise
         dE = ising.metrop_step(grid, ix, J, mu, beta, N)
         dE = dE or 0
         E.append( E[-1] + dE )
@@ -102,33 +104,65 @@ axs[1,1].plot(temps, list(map(np.std, mag_tm)))
 J = 0.5
 mu = 0
 
-temps = np.linspace(0.5, 3, 10)
+temps = np.linspace(0.05, 2, 30)
 eneg_tm = []
 mag_tm = []
-for T in temps:
+grid = torch_ising.get_random_grid(N, device='cpu')
+for T in tqdm(temps):
     beta = 1/T
-    grid = torch_ising.get_random_grid(N)
     
     # Thermalise    
-    therm_sweeps = 50
-    conv = torch_ising.get_conv_nn(J, mu)
+    therm_sweeps = 600
+    conv = torch_ising.get_conv_nn(J, mu, device='cpu')
     for ix in random_ix(N, steps=9*therm_sweeps):
-        dE = torch_ising.metrop_step(grid, conv, beta)
+        grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
     
-    measure_sweeps = 50
-    E = [ising.ising_energy(grid, J, mu).cpu().numpy()]
-    M = [grid.mean().cpu().numpy()]
-    print('measure t=', T)
-    grid = grid.cpu().numpy()[0,0]
-    for ix in random_ix(N, steps=N**2*10):
-        dE = ising.metrop_step(grid, ix, J, mu, beta, N)
+    measure_sweeps = 700
+    E = [ising.ising_energy(grid[0][0], J, mu).cpu().numpy()]
+    M = [grid.sum().cpu().numpy()]
+    #grid = grid.cpu().numpy()[0,0]
+    for ix in random_ix(N, steps=9*measure_sweeps):
+        #dE = ising.metrop_step(grid, ix, J, mu, beta, N)
+        grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
         dE = dE or 0
         E.append( E[-1] + dE )
-        M.append(np.mean(grid))
+        M.append( M[-1] + dM )
         
-    print('done measure')
     eneg_tm.append(E)
     mag_tm.append(M)
+# -
+
+
+
+
+
+
+# +
+energies = np.mean(eneg_tm, axis=1)
+susc = np.std(eneg_tm, axis=1)
+
+plt.plot(energies/N**2)
+plt.gca().twinx()
+plt.plot(susc/temps, 'red')
+
+# +
+magnetizations = np.mean(mag_tm, axis=1)
+permit = np.std(mag_tm, axis=1)
+
+plt.plot(magnetizations/N**2)
+plt.gca().twinx()
+plt.plot(permit/temps, 'red')
+
+# +
+fig, axs = plt.subplots(2,2, figsize=(8,6))
+
+[ax.set_title(t) for ax, t in zip(sum(map(list, axs),[]),
+                              ['Energy','Specific Heat', 'Magnetization', 'Susceptibility'])]
+
+axs[0,0].plot(temps, energies)
+axs[0,1].plot(temps, list(map(np.std, eneg_tm)))
+axs[1,0].plot(temps, list(map(np.mean, mag_tm)))
+axs[1,1].plot(temps, list(map(np.std, mag_tm)))
 
 
 # +
@@ -144,7 +178,7 @@ axs[1,1].plot(temps, list(map(np.std, mag_tm)))
 
 # -
 
-plt.plot(mag_tm[0])
+plt.plot(mag_tm[20])
 
 # +
 # smoothing
@@ -160,7 +194,7 @@ plt.sca(axs[0])
 plt.plot(energies, label='Energy', color='orange') 
 plt.legend()
 
-grid = get_random_grid(50)
-plt.imshow(grid)
+#grid = get_random_grid(50)
+plt.imshow(grid[0,0])
 
-
+plt.plot(grid[0,0,0])

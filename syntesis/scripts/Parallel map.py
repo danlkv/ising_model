@@ -101,10 +101,11 @@ def metrop_step(grid, conv, beta):
     acc_prob = T.exp(-beta*F.relu(dE))
     random = T.rand_like(acc_prob)
     sub[acc_prob > random] *= -1
-    dE[acc_prob < random] *= 0
     grid[ixs] = sub
-    return float(dE.sum().detach())
-   
+    dE[acc_prob < random] *= 0
+    sub[acc_prob < random] *= 0
+    return grid, float(dE.sum().detach()), 2*float(sub.sum().detach())
+
 
 
 # -
@@ -174,4 +175,13 @@ print('Theoretical time for loop', th_time, 'microsec')
 
 plt.imshow(grid)
 
+x = T.eye(3)
+y = T.zeros((2,2))
+x[:2,:2] =y 
+y [ 0,0] = 5
+x
 
+# +
+
+x[:2,:2] =y 
+x

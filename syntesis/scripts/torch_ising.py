@@ -61,5 +61,7 @@ def metrop_step(grid, conv, beta):
     sub[acc_prob > random] *= -1
     dE[acc_prob < random] *= 0
     grid[ixs] = sub
-    return float(dE.sum().detach())
+    sub[acc_prob < random] *= 0
+    return grid, float(dE.sum().detach()), 2*float(sub.sum().detach())
    
+
