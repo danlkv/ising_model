@@ -51,7 +51,7 @@ def metrop_step(grid, conv, beta):
     
     dE = 2*conv(grid)[0,0]
     
-    scatter_ixs = [np.arange(1, d-3, 3) for d in grid.shape[2:]]
+    scatter_ixs = [np.arange(1, d-1, 3) for d in grid.shape[2:]]
     ixs = (0,0) + np.ix_(*scatter_ixs)
     sub = grid[ixs]
     dE = sub*dE
@@ -59,9 +59,7 @@ def metrop_step(grid, conv, beta):
     acc_prob = T.exp(-beta*F.relu(dE))
     random = T.rand_like(acc_prob)
     sub[acc_prob > random] *= -1
-    dE[acc_prob < random] *= 0
     grid[ixs] = sub
+    dE[acc_prob < random] *= 0
     sub[acc_prob < random] *= 0
     return grid, float(dE.sum().detach()), 2*float(sub.sum().detach())
-   
-

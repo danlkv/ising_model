@@ -93,7 +93,7 @@ def metrop_step(grid, conv, beta):
     
     dE = 2*conv(grid)[0,0]
     
-    scatter_ixs = [np.arange(1, d-3, 3) for d in grid.shape[2:]]
+    scatter_ixs = [np.arange(1, d-1, 3) for d in grid.shape[2:]]
     ixs = (0,0) + np.ix_(*scatter_ixs)
     sub = grid[ixs]
     dE = sub*dE
@@ -174,14 +174,3 @@ th_time = r*25
 print('Theoretical time for loop', th_time, 'microsec')
 
 plt.imshow(grid)
-
-x = T.eye(3)
-y = T.zeros((2,2))
-x[:2,:2] =y 
-y [ 0,0] = 5
-x
-
-# +
-
-x[:2,:2] =y 
-x

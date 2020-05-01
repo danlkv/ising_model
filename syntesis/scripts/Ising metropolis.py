@@ -15,7 +15,7 @@
 
 # + [markdown] toc=true
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Simple-first-run" data-toc-modified-id="Simple-first-run-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Simple first run</a></span></li><li><span><a href="#Use-simple-serial-algorithm" data-toc-modified-id="Use-simple-serial-algorithm-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Use simple serial algorithm</a></span></li><li><span><a href="#Use-pytorch-convolution" data-toc-modified-id="Use-pytorch-convolution-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Use pytorch convolution</a></span></li><li><span><a href="#Save-data-for-later-analysis-and-plotting" data-toc-modified-id="Save-data-for-later-analysis-and-plotting-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Save data for later analysis and plotting</a></span></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Simple-first-run" data-toc-modified-id="Simple-first-run-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Simple first run</a></span></li><li><span><a href="#Use-pytorch-convolution" data-toc-modified-id="Use-pytorch-convolution-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Use pytorch convolution</a></span></li><li><span><a href="#Save-data-for-later-analysis-and-plotting" data-toc-modified-id="Save-data-for-later-analysis-and-plotting-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Save data for later analysis and plotting</a></span></li><li><span><a href="#Use-simple-serial-algorithm" data-toc-modified-id="Use-simple-serial-algorithm-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Use simple serial algorithm</a></span></li></ul></div>
 
 # +
 import numpy as np
@@ -47,10 +47,82 @@ def random_ix(N, steps):
     return randix
 
 
-N = 50
+N = 100
 grid = ising.get_random_grid(N)
-#plt.imshow(grid)
-# Rescale to +-1
+
+# ## Use pytorch convolution
+
+# +
+J = 0.5
+mu = 0
+
+temps = np.linspace(0.05, 3, 100)
+eneg_tm = []
+mag_tm = []
+grid = torch_ising.get_random_grid(N, device='cpu')
+for T in tqdm(temps):
+    beta = 1/T
+    
+    # Thermalise    
+    therm_sweeps = 1500
+    conv = torch_ising.get_conv_nn(J, mu, device='cpu')
+    for ix in random_ix(N, steps=9*therm_sweeps):
+        grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
+    
+    measure_sweeps = 800
+    E = [ising.ising_energy(grid[0][0], J, mu).cpu().numpy()]
+    M = [grid.sum().cpu().numpy()]
+    #grid = grid.cpu().numpy()[0,0]
+    for ix in random_ix(N, steps=9*measure_sweeps):
+        #dE = ising.metrop_step(grid, ix, J, mu, beta, N)
+        grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
+        dE = dE or 0
+        E.append( E[-1] + dE )
+        M.append( M[-1] + dM )
+        
+    eneg_tm.append(E)
+    mag_tm.append(M)
+# -
+
+
+N
+
+# ## Save data for later analysis and plotting
+
+# +
+energies = np.mean(eneg_tm, axis=1)
+heat = np.std(eneg_tm, axis=1)
+magnetizations = np.mean(mag_tm, axis=1)
+susc = np.std(mag_tm, axis=1)
+
+exp = {
+    'N':N
+    ,'J':J
+    ,'mu':mu
+    ,'therm_sweeps':therm_sweeps
+    ,'measure_sweeps':measure_sweeps
+    ,'temps': temps
+    ,'energies':energies
+    ,'magn':magnetizations
+    ,'heat':heat
+    ,'susc':susc
+}
+
+np.save(f'../data/exp_N{N}_sweep{therm_sweeps}', exp)
+# -
+
+
+plt.plot(mag_tm[0])
+
+# smoothing
+plt.plot(np.convolve(energies, np.ones((N**2,))/N**2, mode='valid'))
+
+
+
+#grid = get_random_grid(50)
+plt.imshow(grid[0,0])
+
+
 
 # ## Use simple serial algorithm
 
@@ -96,83 +168,3 @@ axs[0,1].plot(temps, list(map(np.std, eneg_tm)))
 axs[1,0].plot(temps, list(map(np.mean, mag_tm)))
 axs[1,1].plot(temps, list(map(np.std, mag_tm)))
 
-# -
-
-# ## Use pytorch convolution
-
-# +
-J = 0.5
-mu = 0
-
-temps = np.linspace(0.05, 2, 30)
-eneg_tm = []
-mag_tm = []
-grid = torch_ising.get_random_grid(N, device='cpu')
-for T in tqdm(temps):
-    beta = 1/T
-    
-    # Thermalise    
-    therm_sweeps = 600
-    conv = torch_ising.get_conv_nn(J, mu, device='cpu')
-    for ix in random_ix(N, steps=9*therm_sweeps):
-        grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
-    
-    measure_sweeps = 600
-    E = [ising.ising_energy(grid[0][0], J, mu).cpu().numpy()]
-    M = [grid.sum().cpu().numpy()]
-    #grid = grid.cpu().numpy()[0,0]
-    for ix in random_ix(N, steps=9*measure_sweeps):
-        #dE = ising.metrop_step(grid, ix, J, mu, beta, N)
-        grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
-        dE = dE or 0
-        E.append( E[-1] + dE )
-        M.append( M[-1] + dM )
-        
-    eneg_tm.append(E)
-    mag_tm.append(M)
-# -
-
-
-
-
-
-
-# ## Save data for later analysis and plotting
-
-# +
-energies = np.mean(eneg_tm, axis=1)
-heat = np.std(eneg_tm, axis=1)
-magnetizations = np.mean(mag_tm, axis=1)
-susc = np.std(mag_tm, axis=1)
-
-exp = {
-    'N':N
-    ,'J':J
-    ,'mu':mu
-    ,'therm_sweeps':therm_sweeps
-    ,'measure_sweeps':measure_sweeps
-    ,'temps': temps
-    ,'energies':energies
-    ,'magn':magnetizations
-    ,'heat':heat
-    ,'susc':susc
-}
-
-np.save(f'../data/exp_N{N}_sweep{therm_sweeps}', exp)
-# -
-
-
-plt.plot(mag_tm[20])
-
-# smoothing
-plt.plot(np.convolve(energies, np.ones((N**2,))/N**2, mode='valid'))
-
-fig, axs = plt.subplots(2,1, figsize=(5,5))
-plt.plot(averages, label='average occupation') 
-plt.legend()
-plt.sca(axs[0])
-plt.plot(energies, label='Energy', color='orange') 
-plt.legend()
-
-#grid = get_random_grid(50)
-plt.imshow(grid[0,0])
