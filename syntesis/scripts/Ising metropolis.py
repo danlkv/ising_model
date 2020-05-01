@@ -15,7 +15,7 @@
 
 # + [markdown] toc=true
 # <h1>Table of Contents<span class="tocSkip"></span></h1>
-# <div class="toc"><ul class="toc-item"><li><span><a href="#Simple-first-run" data-toc-modified-id="Simple-first-run-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Simple first run</a></span></li><li><span><a href="#Use-simple-serial-algorithm" data-toc-modified-id="Use-simple-serial-algorithm-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Use simple serial algorithm</a></span></li><li><span><a href="#Use-pytorch-convolution" data-toc-modified-id="Use-pytorch-convolution-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Use pytorch convolution</a></span></li></ul></div>
+# <div class="toc"><ul class="toc-item"><li><span><a href="#Simple-first-run" data-toc-modified-id="Simple-first-run-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Simple first run</a></span></li><li><span><a href="#Use-simple-serial-algorithm" data-toc-modified-id="Use-simple-serial-algorithm-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Use simple serial algorithm</a></span></li><li><span><a href="#Use-pytorch-convolution" data-toc-modified-id="Use-pytorch-convolution-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Use pytorch convolution</a></span></li><li><span><a href="#Save-data-for-later-analysis-and-plotting" data-toc-modified-id="Save-data-for-later-analysis-and-plotting-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Save data for later analysis and plotting</a></span></li></ul></div>
 
 # +
 import numpy as np
@@ -137,61 +137,35 @@ for T in tqdm(temps):
 
 
 
-energies = np.mean(eneg_tm, axis=1)
-susc = np.std(eneg_tm, axis=1)
-magnetizations = np.mean(mag_tm, axis=1)
-permit = np.std(mag_tm, axis=1)
-
-
+# ## Save data for later analysis and plotting
 
 # +
-fig, axs = plt.subplots(1,2, figsize=(10,4))
+energies = np.mean(eneg_tm, axis=1)
+heat = np.std(eneg_tm, axis=1)
+magnetizations = np.mean(mag_tm, axis=1)
+susc = np.std(mag_tm, axis=1)
 
-fig.suptitle(
-    ('Ising with conv2d.\n'
-     f'{N=}, {therm_sweeps=}, {measure_sweeps=}\n '
-    )
-    #, y=1.00
-    , fontsize=13
-)
+exp = {
+    'N':N
+    ,'J':J
+    ,'mu':mu
+    ,'therm_sweeps':therm_sweeps
+    ,'measure_sweeps':measure_sweeps
+    ,'temps': temps
+    ,'energies':energies
+    ,'magn':magnetizations
+    ,'heat':heat
+    ,'susc':susc
+}
 
-plt.sca(axs[0])
-plt.errorbar(temps, energies/N**2
-             , yerr=susc/N**2
-             , capsize=2
-            )
-plt.gca().twinx()
-plt.plot(temps, susc/temps, 'red', label='Specific heat')
-plt.legend(loc='upper left')
-
-plt.sca(axs[1])
-#plt.plot(temps, magnetizations/N**2)
-plt.errorbar(temps, magnetizations/N**2
-             , yerr=permit/N**2
-             , capsize=2
-            )
-plt.gca().twinx()
-plt.plot(temps, permit/temps/N**2, 'red', label='M. Susceptibility')
-
-plt.legend(loc='center left')
-
-[ax.grid() for ax in axs]
-[ax.set_title(x) for ax,x in zip(axs, ['Energy', 'Magnetization'])]
-[ax.set_xlabel('kT') for ax in axs]
-plt.subplots_adjust(top=0.80)
-
-
-plt.savefig('../data/figures/Ising_conv2d_600sweeps.png')
+np.save(f'../data/exp_N{N}_sweep{therm_sweeps}', exp)
 # -
+
 
 plt.plot(mag_tm[20])
 
-# +
 # smoothing
-
 plt.plot(np.convolve(energies, np.ones((N**2,))/N**2, mode='valid'))
-
-# -
 
 fig, axs = plt.subplots(2,1, figsize=(5,5))
 plt.plot(averages, label='average occupation') 
