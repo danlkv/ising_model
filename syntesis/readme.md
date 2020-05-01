@@ -16,10 +16,10 @@ https://jupytext.readthedocs.io/en/latest/using-server.html#paired-notebooks
 
 1. Link
 
-    jupytext --set-formats ipynb,scripts//py --sync Preparations.ipynb
+    `jupytext --set-formats ipynb,scripts//py --sync Preparations.ipynb`
 
 1. Update to whichever newest
 
-    jupytext --sync Preparations.ipynb
+    `jupytext --sync Preparations.ipynb`
 
 
