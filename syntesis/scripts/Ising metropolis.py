@@ -23,6 +23,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 from scripts import ising
 from scripts import torch_ising
+from multiprocessing import Pool
 
 # %load_ext autoreload
 # %autoreload 2
@@ -56,22 +57,18 @@ grid = ising.get_random_grid(N)
 J = 0.5
 mu = 0
 
-temps = np.linspace(0.05, 3, 100)
-eneg_tm = []
-mag_tm = []
-grid = torch_ising.get_random_grid(N, device='cpu')
-for T in tqdm(temps):
+
+def simulate_torch(T,grid, J,mu,N, therm_sweeps=1500, measure_sweeps=800):
     beta = 1/T
-    
+
     # Thermalise    
-    therm_sweeps = 1500
     conv = torch_ising.get_conv_nn(J, mu, device='cpu')
     for ix in random_ix(N, steps=9*therm_sweeps):
         grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
     
-    measure_sweeps = 800
     E = [ising.ising_energy(grid[0][0], J, mu).cpu().numpy()]
     M = [grid.sum().cpu().numpy()]
+    print('measure',E,M)
     #grid = grid.cpu().numpy()[0,0]
     for ix in random_ix(N, steps=9*measure_sweeps):
         #dE = ising.metrop_step(grid, ix, J, mu, beta, N)
@@ -79,11 +76,20 @@ for T in tqdm(temps):
         dE = dE or 0
         E.append( E[-1] + dE )
         M.append( M[-1] + dM )
-        
-    eneg_tm.append(E)
-    mag_tm.append(M)
+
+    print('done',T)
+    return E, M
 # -
 
+temps = np.linspace(0.05, 3, 100)
+grid = torch_ising.get_random_grid(N, device='cpu')
+pool = Pool(processes=100)
+therm_sweeps = 3500
+measure_sweeps = 1000
+ems = pool.starmap(simulate_torch, [(T, grid, J,mu,N,therm_sweeps, measure_sweeps) for T in temps])
+eneg_tm, mag_tm = zip(*ems)
+
+# -
 
 N
 
