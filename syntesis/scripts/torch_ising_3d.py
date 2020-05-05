@@ -52,20 +52,26 @@ def get_random_grid(N, device='cuda'):
 
 def metrop_step(grid, conv, beta):
     D = 3
+    # Roll to be random
     rix = np.random.randint(0, high=3, size=D)
     grid = T.roll(grid, shifts=tuple(rix), dims=tuple(range(2,2+D)) )
 
+    # Get neighbours contribution
     dE = 2*conv(grid)[0,0]
 
+    # Get energy change
     scatter_ixs = [np.arange(1, d_-1, 3) for d_ in grid.shape[2:]]
     ixs = (0,0) + np.ix_(*scatter_ixs)
     sub = grid[ixs]
     dE = sub*(dE + 2*conv.mu)
 
+    # Randomly flip spins
     acc_prob = T.exp(-beta*F.relu(dE))
     random = T.rand_like(acc_prob)
     sub[acc_prob > random] *= -1
     grid[ixs] = sub
+
+    # Bookkeeping
     dE[acc_prob < random] *= 0
     sub[acc_prob < random] *= 0
     return grid, float(dE.sum().detach()), 2*float(sub.sum().detach())

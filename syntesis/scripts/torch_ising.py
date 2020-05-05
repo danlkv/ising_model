@@ -5,16 +5,33 @@ from torch.functional import F
 import scripts.ising as ising
 
 def get_nn_mask(J, mu):
-     return np.array([
+    return np.array([
          [0, J, 0]
         ,[J, mu, J]
         ,[0, J, 0]
     ])
 def get_funny_mask(J, mu):
-     return np.array([
-         [J, J, J/2]
+    return np.array([
+         [J*2, J, J/2]
         ,[J, mu, J]
         ,[J/2, J, -J/2]
+    ])
+
+def get_diagonal_mask(J, mu):
+    a = 1/np.sqrt(2)
+    return np.array([
+         [J*a, J, -J*a]
+        ,[J,  mu,  J]
+        ,[-J*a, J, J*a]
+    ])
+
+def get_anisotropic_mask(J, mu, ratio):
+    h = 1+ratio
+    v = 1-ratio
+    return np.array([
+         [0, J*v, 0]
+        ,[J*h, mu, J*h]
+        ,[0, J*v, 0]
     ])
 
 
