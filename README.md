@@ -9,6 +9,11 @@ Jump to [presentation](analysis/Ising%20model%203d%20with%20masks.pdf) with desc
 
 ![](data/figures/Ising_conv2d_N50_1500sweeps.png)
 
+### Some links
+- Onsager, @yale, 1943: [2d model with tronsition](http://www.phys.ens.fr/~langlois/Onsager43.pdf)
+- Yang et al, @google, 2019: [Simulation of Ising Modelon TPU Clusters](https://arxiv.org/pdf/1903.11714)
+
+
 # Work framework
 
 This project uses my workflow framework for dev.
