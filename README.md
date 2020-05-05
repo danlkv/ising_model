@@ -5,6 +5,7 @@ Jump to [presentation](analysis/Ising%20model%203d%20with%20masks.pdf) with desc
 1. 3d Ising model
 2. 2d with anisotropy in interactions
 3. 2d with diagonal anisotropy
+4. Use conv2d torch layer for **50x** performance boost
 
 ![](data/figures/Ising_conv2d_N50_1500sweeps.png)
 
