@@ -1,0 +1,10 @@
+
+[N=400 sweeps=3500 measure_sweeps=1000 times=200]
+221968.30s user 11780.24s system 9366% cpu 41:35.68 total
+
+[N=50 sweeps=700 measure_sweeps=700 times=40]
+17 minutes 1020s
+
+[N=400 sweeps=10 000 measure_sweeps=3000 times=100]
+316822.51s user 19133.65s system 9919% cpu 56:26.68 total
+
