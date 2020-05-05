@@ -18,7 +18,7 @@ np.seterr(over='raise')
 # 4. Accept or reject based on criteria
 # 5. Continue to 3
 
-N = 30
+N = 20
 grid = ising.get_random_grid(N)
 
 # ## Use pytorch convolution
@@ -27,10 +27,10 @@ def simulate_torch_3d(T,grid, J,mu,N, therm_sweeps=1500, measure_sweeps=800):
     beta = 1/T
 
     # Thermalise    
-    conv = torch_ising_3d.get_conv_nn(J, mu, device='cuda')
+    conv = torch_ising_3d.get_conv_nn(J, mu, device='cpu')
     for ix in range(9*3*therm_sweeps):
         grid, dE, dM = torch_ising_3d.metrop_step(grid, conv, beta)
-    
+
     E = [ising.ising_energy(grid[0][0], J, mu).cpu().numpy()]
     M = [grid.sum().cpu().numpy()]
     #grid = grid.cpu().numpy()[0,0]
@@ -54,14 +54,14 @@ def simulate_torch_seq(temps, grid, J, mu, N, therm_sweeps=1500, measure_sweeps=
 J = 0.5
 mu = 0.
 
-temps = np.linspace(0.05, 3, 20)
-temps = np.concatenate((temps, np.linspace(0.65, 1.4, 40)))
+temps = np.linspace(0.15, 3.5, 30)
+#temps = np.concatenate((temps, np.linspace(0.65, 1.4, 20)))
 temps = np.sort(temps)
 
-grid = torch_ising_3d.get_random_grid(N, device='cuda')
+grid = torch_ising_3d.get_random_grid(N, device='cpu')
 pool = Pool(processes=2)
-therm_sweeps = 800
-measure_sweeps = 600
+therm_sweeps = 700
+measure_sweeps = 500
 
 args = [(T, grid, J,mu,N,therm_sweeps, measure_sweeps) for T in temps]
 # To run in parallel, use s-tarmap

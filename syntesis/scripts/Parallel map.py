@@ -21,7 +21,9 @@
 import torch as T
 import numpy as np
 from torch.functional import F
+from tqdm import tqdm
 import matplotlib.pyplot as plt
+from pyrofiler import Profiler
 
 import scripts.ising as ising
 
@@ -39,7 +41,7 @@ else:
 # ## Syntetic tests of cuda vs numpy vs torch
 
 # +
-# %%writefile scripts/torch_ising.py
+# #%%writefile scripts/torch_ising.py
 import torch as T
 import numpy as np
 from itertools import product
@@ -109,6 +111,8 @@ def metrop_step(grid, conv, beta):
 
 # -
 
+from scripts import torch_ising
+
 device = T.device('cpu')    
 
 # +
@@ -126,22 +130,26 @@ print('after', grid.mean())
 # ## Simulate with conv
 
 E = 0
-grid = grid_torch(ising.get_random_grid(500)) .to(device)
+N = 500
+grid = grid_torch(ising.get_random_grid(N)) .to(device)
 
 # +
-mask = get_nn_mask(.5, 0)
-#mask = get_funny_mask(.5, 0)
+J = .5
+mu = 0
+mask = get_nn_mask(J, mu)
+mask = torch_ising.get_diagonal_mask(.5, 0)
+mask = torch_ising.get_funny_mask(.5, 0)
 conv = get_conv_torch(mask).to(device)
 
-beta = 1/2.9;
+beta = 1/.2;
 M = float(grid.mean())
 energs = [E]
 mags = [M]
 # -
 
 sweeps = 80
-for s in range(9*sweeps):
-    dE = metrop_step(grid, conv, beta=beta)
+for s in tqdm(range(9*sweeps)):
+    grid, dE, dM = metrop_step(grid, conv, beta=beta)
     E += dE
     energs.append(E)
     mags.append(float(grid.mean()))
@@ -155,21 +163,28 @@ plt.imshow(grid[0,0].detach().numpy())
 gr.mean()
 
 # +
-# %%time
+prof = Profiler()
 
-r = len(im.flatten())
-print(r)
-N = 5000
-r = int(N**2/9)
-rand = np.random.randint(0, N, size=(r, 2))
-grid = ising.get_random_grid(N)
+for N in [100,500,1000, 5000]:
+    r = int(N**2/9)
+    rand = np.random.randint(0, N, size=(r, 2))
+    grid = ising.get_random_grid(N)
 
-for i in range(r):
-    dE = ising.metrop_step(grid, rand[i], J, mu, 1/20, N)
-    
+    with prof.timing(f'size {N}'):
+        for i in range(r):
+            dE = ising.metrop_step(grid, rand[i], J, mu, 1/20, N)
+
 # -
+
+for N in [100, 500, 1000, 5000]:
+    grid = grid_torch(ising.get_random_grid(N)) .to(device)
+    mask = get_nn_mask(J, mu)
+    #mask = get_funny_mask(.5, 0)
+    conv = get_conv_torch(mask).to(device)
+    with prof.timing(f'size {N}'):
+        grid, dE, dM = metrop_step(grid, conv, beta=beta)
 
 th_time = r*25
 print('Theoretical time for loop', th_time, 'microsec')
 
-plt.imshow(grid)
+prof.data

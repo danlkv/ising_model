@@ -48,50 +48,70 @@ def random_ix(N, steps):
     return randix
 
 
-N = 100
+
+N = 60
 grid = ising.get_random_grid(N)
+
 
 # ## Use pytorch convolution
 
 # +
-J = 0.5
-mu = 0
-
-
 def simulate_torch(T,grid, J,mu,N, therm_sweeps=1500, measure_sweeps=800):
     beta = 1/T
 
     # Thermalise    
-    conv = torch_ising.get_conv_nn(J, mu, device='cpu')
-    for ix in random_ix(N, steps=9*therm_sweeps):
+    mask = torch_ising.get_anisotropic_mask(J, mu, 0.98)
+    #mask = torch_ising.get_diagonal_mask(J, mu)
+    conv = torch_ising.get_conv_torch(mask)
+    
+    for ix in range(9*therm_sweeps):
         grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
     
     E = [ising.ising_energy(grid[0][0], J, mu).cpu().numpy()]
     M = [grid.sum().cpu().numpy()]
-    print('measure',E,M)
     #grid = grid.cpu().numpy()[0,0]
-    for ix in random_ix(N, steps=9*measure_sweeps):
+    for ix in range(9*measure_sweeps):
         #dE = ising.metrop_step(grid, ix, J, mu, beta, N)
         grid, dE, dM = torch_ising.metrop_step(grid, conv, beta)
         dE = dE or 0
         E.append( E[-1] + dE )
         M.append( M[-1] + dM )
+    return E, M, grid
 
-    print('done',T)
-    return E, M
-# -
+def simulate_torch_seq(temps, grid, J, mu, N, therm_sweeps=1500, measure_sweeps=800):
+    em = []
+    grids = []
+    for T in tqdm(temps):
+        a= (T, grid, J,mu,N, therm_sweeps, measure_sweeps)
+        E, M, grid = simulate_torch(*a)
+        grids.append(grid)
+        em.append((E,M))
+    return em, grids
 
-temps = np.linspace(0.05, 3, 100)
+# +
+J = 0.5
+mu = 0.
+
+temps = np.linspace(0.05, 3, 15)
+temps = np.concatenate((temps, np.linspace(0.45, 1.3, 30)))
+temps = np.concatenate((temps, np.linspace(0.5, 0.8 , 10)))
+temps = np.sort(temps)
+
 grid = torch_ising.get_random_grid(N, device='cpu')
-pool = Pool(processes=100)
-therm_sweeps = 3500
-measure_sweeps = 1000
-ems = pool.starmap(simulate_torch, [(T, grid, J,mu,N,therm_sweeps, measure_sweeps) for T in temps])
-eneg_tm, mag_tm = zip(*ems)
+pool = Pool(processes=2)
+therm_sweeps = 2500
+measure_sweeps = 1200
 
+args = [(T, grid, J,mu,N,therm_sweeps, measure_sweeps) for T in temps]
+# To run in parallel, use s-tarmap
+#ems = pool.starmap(simulate_torch, args)
+ems, grids = simulate_torch_seq(temps, grid, J, mu, N, therm_sweeps, measure_sweeps)
+eneg_tm, mag_tm = zip(*ems)
 # -
 
-N
+# Clear tqdm
+for instance in list(tqdm._instances):
+    tqdm._decr_instances(instance)
 
 # ## Save data for later analysis and plotting
 
@@ -100,6 +120,8 @@ energies = np.mean(eneg_tm, axis=1)
 heat = np.std(eneg_tm, axis=1)
 magnetizations = np.mean(mag_tm, axis=1)
 susc = np.std(mag_tm, axis=1)
+an = .95
+R = (1+an)/(1-an)
 
 exp = {
     'N':N
@@ -112,21 +134,33 @@ exp = {
     ,'magn':magnetizations
     ,'heat':heat
     ,'susc':susc
+    
+    ,'an':an
+    
 }
 
-np.save(f'../data/exp_N{N}_sweep{therm_sweeps}', exp)
+fn = f'../data/exp_N{N}_sweep{therm_sweeps}_mu{mu}_temp2_anisotr.98'
+print(fn)
+np.save(fn, exp)
 # -
 
 
-plt.plot(mag_tm[0])
+plt.plot(mag_tm[20])
 
 # smoothing
 plt.plot(np.convolve(energies, np.ones((N**2,))/N**2, mode='valid'))
 
+n_ = 10
+an = .95
+R = (1+an)/(1-an)
+plt.title(f'J\'/J={R:.4} T={temps[n_]:.2}')
+plt.imshow(grids[n_][0,0])
 
+plt.savefig(f'../data/figures/Grid_anisotropy{an}_T.52.png')
 
 #grid = get_random_grid(50)
-plt.imshow(grid[0,0])
+mask = torch_ising.get_anisotropic_mask(J, mu, 0.5)
+plt.imshow(mask, colormap='grayscale')
 
 
 
