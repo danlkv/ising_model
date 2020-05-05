@@ -6,6 +6,8 @@ Jump to [presentation](analysis/Ising%20model%203d%20with%20masks.pdf) with desc
 2. 2d with anisotropy in interactions
 3. 2d with diagonal anisotropy
 
+![](data/figures/Ising_conv2d_N50_1500sweeps.png)
+
 # Work framework
 
 This project uses my workflow framework for dev.
