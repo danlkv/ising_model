@@ -107,7 +107,6 @@ def metrop_step(grid, conv, beta):
     return grid, float(dE.sum().detach()), 2*float(sub.sum().detach())
 
 
-
 # -
 
 device = T.device('cpu')    

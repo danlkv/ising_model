@@ -27,6 +27,8 @@ def get_conv_torch(mask):
                         , padding=0
                         , bias = False
                        )
+    l.mu = mask[shape[0]//2, shape[1]//2]
+    mask[shape[0]//2, shape[1]//2] = 0
     l.weight.data = T.from_numpy(mask[np.newaxis, np.newaxis, ...])
     return l
 
@@ -54,7 +56,7 @@ def metrop_step(grid, conv, beta):
     scatter_ixs = [np.arange(1, d-1, 3) for d in grid.shape[2:]]
     ixs = (0,0) + np.ix_(*scatter_ixs)
     sub = grid[ixs]
-    dE = sub*dE
+    dE = sub*(dE + 2*conv.mu)
     
     acc_prob = T.exp(-beta*F.relu(dE))
     random = T.rand_like(acc_prob)
@@ -63,3 +65,4 @@ def metrop_step(grid, conv, beta):
     dE[acc_prob < random] *= 0
     sub[acc_prob < random] *= 0
     return grid, float(dE.sum().detach()), 2*float(sub.sum().detach())
+
