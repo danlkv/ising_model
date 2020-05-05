@@ -53,7 +53,7 @@ def get_random_grid(N, device='cuda'):
 def metrop_step(grid, conv, beta):
     D = 3
     rix = np.random.randint(0, high=3, size=D)
-    grid = T.roll(grid, shifts=tuple(rix), dims=range(2,2+D))
+    grid = T.roll(grid, shifts=tuple(rix), dims=tuple(range(2,2+D)) )
 
     dE = 2*conv(grid)[0,0]
 
