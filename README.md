@@ -1,5 +1,14 @@
+# Ising model in 3d and different masks
+
+Jump to [presentation](analysis/Ising%20model%203d%20with%20masks.pdf) with description
+
+1. 3d Ising model
+2. 2d with anisotropy in interactions
+3. 2d with diagonal anisotropy
+
 # Work framework
 
+This project uses my workflow framework for dev.
 The framework is to streamline the proocess of *development experimentation and research* (`DER`)
 
 Output of `DER` is `packaged code`, `data` which often represented as plots and `figures`
@@ -25,3 +34,11 @@ Transitions
     2,3 -> 5,6
 
 After packaging, a testing stage may be added
+
+# DER directory strucure
+
+- `syntesis/` dir for stage 1: experiments, trial and error
+- `data/` experiment data and plots
+- `analysis/` stage 6: plotting code, pdfs and docs
+- `run/` shell scripts, logs from run, performance raw data
+- `src/` stage 4: packaged code that was abstracted from syntesis
