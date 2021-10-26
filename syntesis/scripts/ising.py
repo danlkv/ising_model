@@ -18,6 +18,8 @@ def ising_energy(grid, J, mu):
             adj_ = adjacent_indices_torus((i,j), N)
             E += -J*grid[i,j]*sum(grid[ix] for ix in adj_)
             E += -mu*grid[i, j]
+    # Each edge is counted twice
+    E = E/2
     return E
 
 def get_random_grid(N):
